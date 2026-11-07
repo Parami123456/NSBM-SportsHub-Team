@@ -17,7 +17,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $type = $_POST['type'] ?? '';
     $id = (int) ($_POST['id'] ?? 0);
 
-    if ($type === 'club_create' || $type === 'club_update') {
+       $status = $_POST['status'] ?? '';
+
+    if (
+        $type === 'membership' &&
+        in_array($status, ['approved', 'rejected'], true)
+    ) {
+        $stmt = $pdo->prepare(
+            'UPDATE memberships SET status = ? WHERE id = ?'
+        );
+        $stmt->execute([$status, $id]);
+        $message = 'Membership request updated.';
+    } elseif ($type === 'club_create' || $type === 'club_update') {
         $clubName = trim($_POST['club_name'] ?? '');
         $category = trim($_POST['category'] ?? '');
         $tagline = trim($_POST['tagline'] ?? '');
@@ -80,6 +91,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $clubs = $pdo->query('SELECT * FROM clubs ORDER BY name')->fetchAll();
+$memberships = $pdo->query(
+    'SELECT
+        memberships.id,
+        memberships.joined_at,
+        users.name AS student_name,
+        users.student_id,
+        clubs.name AS club_name
+     FROM memberships
+     JOIN users ON users.id = memberships.user_id
+     JOIN clubs ON clubs.id = memberships.club_id
+     WHERE memberships.status = "pending"
+     ORDER BY memberships.joined_at'
+)->fetchAll();
 
 require 'includes/header.php';
 ?>
@@ -191,26 +215,42 @@ require 'includes/header.php';
     <?php endforeach; ?>
   </div>
 </div>
-  <!-- DIVYANJALEE - MEMBERSHIP & VENUE REQUESTS -->
-  <div class="section-head" style="margin-top:44px">
-    <h2>Membership & venue requests</h2>
-    <p>Approve or reject student requests.</p>
+  <div class="section-head">
+    <h2>Club membership approvals</h2>
+    <a class="button" href="reports.php">Participation reports ↗</a>
   </div>
-  <div class="grid">
-    <article class="panel">
-      <span class="eyebrow">MEMBERSHIP REQUESTS</span>
-      <h3>Pending memberships</h3>
-      <p>New students who requested to join a club will appear here.</p>
-      <p><strong>Note:</strong> This section is managed by Divyanjalee.</p>
-      <button class="button" type="button">Review requests ↗</button>
-    </article>
-    <article class="panel">
-      <span class="eyebrow">VENUE REQUESTS</span>
-      <h3>Pending venue bookings</h3>
-      <p>Venue booking requests for training and events will appear here.</p>
-      <p><strong>Note:</strong> This section is managed by Divyanjalee.</p>
-      <button class="button" type="button">Review bookings ↗</button>
-    </article>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>STUDENT</th><th>STUDENT ID</th><th>CLUB</th><th>REQUESTED</th><th>ACTION</th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php foreach ($memberships as $membership): ?>
+          <tr>
+            <td><?= e($membership['student_name']) ?></td>
+            <td><?= e($membership['student_id']) ?></td>
+            <td><?= e($membership['club_name']) ?></td>
+            <td><?= date('d M Y', strtotime($membership['joined_at'])) ?></td>
+            <td>
+              <?php foreach (['approved', 'rejected'] as $decision): ?>
+                <form method="post" action="admin.php" style="display:inline">
+                  <input type="hidden" name="csrf" value="<?= e(csrf()) ?>">
+                  <input type="hidden" name="type" value="membership">
+                  <input type="hidden" name="id" value="<?= (int) $membership['id'] ?>">
+                  <input type="hidden" name="status" value="<?= e($decision) ?>">
+                  <button class="text-link" type="submit" style="border:0;background:none;cursor:pointer">
+                    <?= ucfirst($decision) ?>
+                  </button>
+                </form>
+              <?php endforeach; ?>
+            </td>
+          </tr>
+        <?php endforeach; ?>
+      </tbody>
+    </table>
   </div>
+  
 
 <?php require 'includes/footer.php'; ?>
