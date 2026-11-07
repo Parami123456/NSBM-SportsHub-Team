@@ -16,6 +16,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $type = $_POST['type'] ?? '';
     $id = (int) ($_POST['id'] ?? 0);
+        $status = $_POST['status'] ?? '';
+
+    if (
+        $type === 'booking' &&
+        in_array($status, ['approved', 'rejected'], true)
+    ) {
+        $stmt = $pdo->prepare('UPDATE bookings SET status = ? WHERE id = ?');
+        $stmt->execute([$status, $id]);
+        $message = 'Booking request updated.';
+    } elseif ($type === 'club_create' || $type === 'club_update') {
 
        $status = $_POST['status'] ?? '';
 
@@ -91,6 +101,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $clubs = $pdo->query('SELECT * FROM clubs ORDER BY name')->fetchAll();
+    $bookings = $pdo->query(
+    'SELECT bookings.id, bookings.booking_date, bookings.start_time,
+     bookings.end_time, bookings.purpose,
+     users.name AS student_name,
+     facilities.name AS facility_name
+     FROM bookings
+     JOIN users ON users.id = bookings.user_id
+     JOIN facilities ON facilities.id = bookings.facility_id
+     WHERE bookings.status = "pending"
+     ORDER BY bookings.booking_date'
+)->fetchAll();
 $memberships = $pdo->query(
     'SELECT
         memberships.id,
@@ -243,6 +264,37 @@ require 'includes/header.php';
                   <button class="text-link" type="submit" style="border:0;background:none;cursor:pointer">
                     <?= ucfirst($decision) ?>
                   </button>
+                </form>
+              <?php endforeach; ?>
+            </td>
+          </tr>
+        <?php endforeach; ?>
+      </tbody>
+    </table>
+  </div>
+      <div class="section-head" style="margin-top:44px">
+    <h2>Facility Bookings</h2>
+    <p>Approve or reject bookings - Managed by Thiwanka</p>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>STUDENT</th><th>FACILITY</th><th>DATE</th><th>TIME</th><th>PURPOSE</th><th>ACTION</th></tr></thead>
+      <tbody>
+        <?php foreach ($bookings as $booking): ?>
+          <tr>
+            <td><?= e($booking['student_name']) ?></td>
+            <td><?= e($booking['facility_name']) ?></td>
+            <td><?= date('d M Y', strtotime($booking['booking_date'])) ?></td>
+            <td><?= e($booking['start_time']) ?> - <?= e($booking['end_time']) ?></td>
+            <td><?= e($booking['purpose']) ?></td>
+            <td>
+              <?php foreach (['approved', 'rejected'] as $decision): ?>
+                <form method="post" action="admin.php" style="display:inline">
+                  <input type="hidden" name="csrf" value="<?= e(csrf()) ?>">
+                  <input type="hidden" name="type" value="booking">
+                  <input type="hidden" name="id" value="<?= (int) $booking['id'] ?>">
+                  <input type="hidden" name="status" value="<?= e($decision) ?>">
+                  <button class="text-link" type="submit" style="border:0;background:none;cursor:pointer"><?= ucfirst($decision) ?></button>
                 </form>
               <?php endforeach; ?>
             </td>
