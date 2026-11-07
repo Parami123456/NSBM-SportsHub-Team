@@ -17,7 +17,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $type = $_POST['type'] ?? '';
     $id = (int) ($_POST['id'] ?? 0);
         $status = $_POST['status'] ?? '';
-
     if (
         $type === 'booking' &&
         in_array($status, ['approved', 'rejected'], true)
@@ -25,17 +24,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $pdo->prepare('UPDATE bookings SET status = ? WHERE id = ?');
         $stmt->execute([$status, $id]);
         $message = 'Booking request updated.';
-    } elseif ($type === 'club_create' || $type === 'club_update') {
-
-       $status = $_POST['status'] ?? '';
-
-    if (
+    } elseif (
         $type === 'membership' &&
         in_array($status, ['approved', 'rejected'], true)
     ) {
-        $stmt = $pdo->prepare(
-            'UPDATE memberships SET status = ? WHERE id = ?'
-        );
+        $stmt = $pdo->prepare('UPDATE memberships SET status = ? WHERE id = ?');
         $stmt->execute([$status, $id]);
         $message = 'Membership request updated.';
     } elseif ($type === 'club_create' || $type === 'club_update') {
