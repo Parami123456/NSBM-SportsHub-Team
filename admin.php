@@ -191,5 +191,26 @@ require 'includes/header.php';
     <?php endforeach; ?>
   </div>
 </div>
+  <!-- DIVYANJALEE - MEMBERSHIP & VENUE REQUESTS -->
+  <div class="section-head" style="margin-top:44px">
+    <h2>Membership & venue requests</h2>
+    <p>Approve or reject student requests.</p>
+  </div>
+  <div class="grid">
+    <article class="panel">
+      <span class="eyebrow">MEMBERSHIP REQUESTS</span>
+      <h3>Pending memberships</h3>
+      <p>New students who requested to join a club will appear here.</p>
+      <p><strong>Note:</strong> This section is managed by Divyanjalee.</p>
+      <button class="button" type="button">Review requests ↗</button>
+    </article>
+    <article class="panel">
+      <span class="eyebrow">VENUE REQUESTS</span>
+      <h3>Pending venue bookings</h3>
+      <p>Venue booking requests for training and events will appear here.</p>
+      <p><strong>Note:</strong> This section is managed by Divyanjalee.</p>
+      <button class="button" type="button">Review bookings ↗</button>
+    </article>
+  </div>
 
 <?php require 'includes/footer.php'; ?>
