@@ -5,11 +5,19 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
-$host = getenv('DB_HOST') ?: 'YOUR_DATABASE_HOST';
-$database = getenv('DB_NAME') ?: 'YOUR_DATABASE_NAME';
-$username = getenv('DB_USER') ?: 'YOUR_DATABASE_USER';
-$password = getenv('DB_PASS') ?: 'YOUR_DATABASE_PASSWORD';
+$isLocal = in_array($_SERVER['HTTP_HOST'] ?? '', ['localhost', '127.0.0.1']);
 
+if ($isLocal) {
+    $host = 'localhost';
+    $database = 'sportshub';
+    $username = 'root';
+    $password = '';
+} else {
+    $host = getenv('DB_HOST') ?: 'YOUR_DATABASE_HOST';
+    $database = getenv('DB_NAME') ?: 'YOUR_DATABASE_NAME';
+    $username = getenv('DB_USER') ?: 'YOUR_DATABASE_USER';
+    $password = getenv('DB_PASS') ?: 'YOUR_DATABASE_PASSWORD';
+}
 try {
     $pdo = new PDO(
         "mysql:host={$host};dbname={$database};charset=utf8mb4",
