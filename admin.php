@@ -91,6 +91,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ? 'Sports club deleted.'
             : 'That sports club could not be found.';
     }
+        } elseif ($type === 'training_create' || $type === 'training_update') {
+        // GIMHAN - Training Sessions
+        $clubId = (int) ($_POST['training_club_id'] ?? 0);
+        $title = trim($_POST['training_title'] ?? '');
+        $trainingDate = trim($_POST['training_date'] ?? '');
+        $startTime = trim($_POST['training_start'] ?? '');
+        $endTime = trim($_POST['training_end'] ?? '');
+        $trainingVenue = trim($_POST['training_venue'] ?? '');
+        $coach = trim($_POST['training_coach'] ?? '');
+
+        if ($clubId === 0 || $title === '' || $trainingDate === '' || $startTime === '' || $endTime === '' || $trainingVenue === '') {
+            $error = 'Complete all required training details.';
+        } else {
+            if ($type === 'training_create') {
+                $stmt = $pdo->prepare('INSERT INTO training_sessions (club_id, title, training_date, start_time, end_time, venue, coach) VALUES (?, ?, ?, ?, ?, ?, ?)');
+                $stmt->execute([$clubId, $title, $trainingDate, $startTime, $endTime, $trainingVenue, $coach]);
+                $message = 'Training session created.';
+            } else {
+                $stmt = $pdo->prepare('UPDATE training_sessions SET club_id = ?, title = ?, training_date = ?, start_time = ?, end_time = ?, venue = ?, coach = ? WHERE id = ?');
+                $stmt->execute([$clubId, $title, $trainingDate, $startTime, $endTime, $trainingVenue, $coach, $id]);
+                $message = 'Training session updated.';
+            }
+        }
+    } elseif ($type === 'training_delete') {
+        $stmt = $pdo->prepare('DELETE FROM training_sessions WHERE id = ?');
+        $stmt->execute([$id]);
+        $message = $stmt->rowCount() > 0 ? 'Training session deleted.' : 'That training session could not be found.';
+    }
 }
 
 $clubs = $pdo->query('SELECT * FROM clubs ORDER BY name')->fetchAll();
@@ -118,7 +146,13 @@ $memberships = $pdo->query(
      WHERE memberships.status = "pending"
      ORDER BY memberships.joined_at'
 )->fetchAll();
-
+// GIMHAN - Fetch training sessions
+$trainings = $pdo->query(
+    'SELECT training_sessions.*, clubs.name AS club_name
+     FROM training_sessions
+     JOIN clubs ON clubs.id = training_sessions.club_id
+     ORDER BY training_sessions.training_date DESC, training_sessions.start_time'
+)->fetchAll();
 require 'includes/header.php';
 ?>
 
@@ -290,6 +324,75 @@ require 'includes/header.php';
                   <button class="text-link" type="submit" style="border:0;background:none;cursor:pointer"><?= ucfirst($decision) ?></button>
                 </form>
               <?php endforeach; ?>
+            </td>
+          </tr>
+        <?php endforeach; ?>
+      </tbody>
+    </table>
+  </div>
+  <!-- GIMHAN - TRAINING SESSIONS -->
+  <div class="section-head" style="margin-top:44px">
+    <h2>Training Sessions</h2>
+    <p>Schedule training - Managed by Gimhan</p>
+  </div>
+
+  <section class="form-card" style="max-width:none">
+    <span class="eyebrow">SCHEDULE TRAINING</span>
+    <h2>Add training session</h2>
+    <form method="post" action="admin.php">
+      <input type="hidden" name="csrf" value="<?= e(csrf()) ?>">
+      <input type="hidden" name="type" value="training_create">
+      <div class="grid">
+        <label>Club
+          <select class="field" name="training_club_id" required>
+            <option value="">Select club</option>
+            <?php foreach ($clubs as $club): ?>
+              <option value="<?= (int) $club['id'] ?>"><?= e($club['name']) ?></option>
+            <?php endforeach; ?>
+          </select>
+        </label>
+        <label>Session title
+          <input class="field" name="training_title" maxlength="100" placeholder="Morning Practice" required>
+        </label>
+        <label>Date
+          <input class="field" type="date" name="training_date" required>
+        </label>
+        <label>Start time
+          <input class="field" type="time" name="training_start" required>
+        </label>
+        <label>End time
+          <input class="field" type="time" name="training_end" required>
+        </label>
+        <label>Venue
+          <input class="field" name="training_venue" maxlength="120" placeholder="Main Ground" required>
+        </label>
+        <label>Coach
+          <input class="field" name="training_coach" maxlength="80" placeholder="Coach name">
+        </label>
+      </div>
+      <button class="button" type="submit" style="margin-top:14px">Add training session ↗</button>
+    </form>
+  </section>
+
+  <div class="table-wrap" style="margin-top:20px">
+    <table>
+      <thead><tr><th>CLUB</th><th>TITLE</th><th>DATE</th><th>TIME</th><th>VENUE</th><th>COACH</th><th>ACTION</th></tr></thead>
+      <tbody>
+        <?php foreach ($trainings as $t): ?>
+          <tr>
+            <td><?= e($t['club_name']) ?></td>
+            <td><?= e($t['title']) ?></td>
+            <td><?= date('d M Y', strtotime($t['training_date'])) ?></td>
+            <td><?= e($t['start_time']) ?> - <?= e($t['end_time']) ?></td>
+            <td><?= e($t['venue']) ?></td>
+            <td><?= e($t['coach']) ?></td>
+            <td>
+              <form method="post" action="admin.php" onsubmit="return confirm('Delete this training session?')" style="display:inline">
+                <input type="hidden" name="csrf" value="<?= e(csrf()) ?>">
+                <input type="hidden" name="type" value="training_delete">
+                <input type="hidden" name="id" value="<?= (int) $t['id'] ?>">
+                <button class="text-link" type="submit" style="border:0;background:none;cursor:pointer">Delete</button>
+              </form>
             </td>
           </tr>
         <?php endforeach; ?>
