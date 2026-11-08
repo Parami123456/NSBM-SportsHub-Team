@@ -118,7 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $pdo->prepare('DELETE FROM training_sessions WHERE id = ?');
         $stmt->execute([$id]);
         $message = $stmt->rowCount() > 0 ? 'Training session deleted.' : 'That training session could not be found.';
-    }
+    
         } elseif ($type === 'fixture_create' || $type === 'fixture_update') {
         // PERERA - Fixtures / Events / Results
         $fixtureTitle = trim($_POST['fixture_title'] ?? '');
