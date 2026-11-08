@@ -90,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $message = $stmt->rowCount() > 0
             ? 'Sports club deleted.'
             : 'That sports club could not be found.';
-    }
+    
         } elseif ($type === 'training_create' || $type === 'training_update') {
         // GIMHAN - Training Sessions
         $clubId = (int) ($_POST['training_club_id'] ?? 0);
