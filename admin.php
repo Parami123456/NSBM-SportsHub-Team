@@ -119,6 +119,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$id]);
         $message = $stmt->rowCount() > 0 ? 'Training session deleted.' : 'That training session could not be found.';
     }
+        } elseif ($type === 'fixture_create' || $type === 'fixture_update') {
+        // PERERA - Fixtures / Events / Results
+        $fixtureTitle = trim($_POST['fixture_title'] ?? '');
+        $fixtureDate = trim($_POST['fixture_date'] ?? '');
+        $fixtureTime = trim($_POST['fixture_time'] ?? '');
+        $fixtureVenue = trim($_POST['fixture_venue'] ?? '');
+        $fixtureOpponent = trim($_POST['fixture_opponent'] ?? '');
+        $fixtureResult = trim($_POST['fixture_result'] ?? '');
+        $fixtureStatus = trim($_POST['fixture_status'] ?? 'upcoming');
+
+        if ($fixtureTitle === '' || $fixtureDate === '' || $fixtureVenue === '') {
+            $error = 'Complete all required fixture details.';
+        } else {
+            if ($type === 'fixture_create') {
+                $stmt = $pdo->prepare('INSERT INTO fixtures (title, fixture_date, fixture_time, venue, opponent, result, status) VALUES (?, ?, ?, ?, ?, ?, ?)');
+                $stmt->execute([$fixtureTitle, $fixtureDate, $fixtureTime, $fixtureVenue, $fixtureOpponent, $fixtureResult, $fixtureStatus]);
+                $message = 'Fixture created.';
+            } else {
+                $stmt = $pdo->prepare('UPDATE fixtures SET title = ?, fixture_date = ?, fixture_time = ?, venue = ?, opponent = ?, result = ?, status = ? WHERE id = ?');
+                $stmt->execute([$fixtureTitle, $fixtureDate, $fixtureTime, $fixtureVenue, $fixtureOpponent, $fixtureResult, $fixtureStatus, $id]);
+                $message = 'Fixture updated.';
+            }
+        }
+    } elseif ($type === 'fixture_delete') {
+        $stmt = $pdo->prepare('DELETE FROM fixtures WHERE id = ?');
+        $stmt->execute([$id]);
+        $message = $stmt->rowCount() > 0 ? 'Fixture deleted.' : 'That fixture could not be found.';
+    }
 }
 
 $clubs = $pdo->query('SELECT * FROM clubs ORDER BY name')->fetchAll();
@@ -152,6 +180,10 @@ $trainings = $pdo->query(
      FROM training_sessions
      JOIN clubs ON clubs.id = training_sessions.club_id
      ORDER BY training_sessions.training_date DESC, training_sessions.start_time'
+)->fetchAll();
+// PERERA - Fetch fixtures
+$fixtures = $pdo->query(
+    'SELECT * FROM fixtures ORDER BY fixture_date DESC, fixture_time'
 )->fetchAll();
 require 'includes/header.php';
 ?>
@@ -391,6 +423,75 @@ require 'includes/header.php';
                 <input type="hidden" name="csrf" value="<?= e(csrf()) ?>">
                 <input type="hidden" name="type" value="training_delete">
                 <input type="hidden" name="id" value="<?= (int) $t['id'] ?>">
+                <button class="text-link" type="submit" style="border:0;background:none;cursor:pointer">Delete</button>
+              </form>
+            </td>
+          </tr>
+        <?php endforeach; ?>
+      </tbody>
+    </table>
+  </div>
+  <!-- PERERA - FIXTURES / EVENTS / RESULTS -->
+  <div class="section-head" style="margin-top:44px">
+    <h2>Fixtures & Results</h2>
+    <p>Manage fixtures and results - Managed by Perera</p>
+  </div>
+
+  <section class="form-card" style="max-width:none">
+    <span class="eyebrow">CREATE FIXTURE</span>
+    <h2>Add fixture / event</h2>
+    <form method="post" action="admin.php">
+      <input type="hidden" name="csrf" value="<?= e(csrf()) ?>">
+      <input type="hidden" name="type" value="fixture_create">
+      <div class="grid">
+        <label>Fixture title
+          <input class="field" name="fixture_title" maxlength="100" placeholder="Inter-Uni Rugby Match" required>
+        </label>
+        <label>Date
+          <input class="field" type="date" name="fixture_date" required>
+        </label>
+        <label>Time
+          <input class="field" type="time" name="fixture_time">
+        </label>
+        <label>Venue
+          <input class="field" name="fixture_venue" maxlength="120" placeholder="Main Ground" required>
+        </label>
+        <label>Opponent / Team
+          <input class="field" name="fixture_opponent" maxlength="100" placeholder="Vs Colombo Uni">
+        </label>
+        <label>Result
+          <input class="field" name="fixture_result" maxlength="100" placeholder="Won 24 - 18">
+        </label>
+        <label>Status
+          <select class="field" name="fixture_status">
+            <option value="upcoming">Upcoming</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </label>
+      </div>
+      <button class="button" type="submit" style="margin-top:14px">Add fixture ↗</button>
+    </form>
+  </section>
+
+  <div class="table-wrap" style="margin-top:20px">
+    <table>
+      <thead><tr><th>TITLE</th><th>DATE</th><th>TIME</th><th>VENUE</th><th>OPPONENT</th><th>RESULT</th><th>STATUS</th><th>ACTION</th></tr></thead>
+      <tbody>
+        <?php foreach ($fixtures as $fx): ?>
+          <tr>
+            <td><?= e($fx['title']) ?></td>
+            <td><?= date('d M Y', strtotime($fx['fixture_date'])) ?></td>
+            <td><?= e($fx['fixture_time']) ?></td>
+            <td><?= e($fx['venue']) ?></td>
+            <td><?= e($fx['opponent']) ?></td>
+            <td><?= e($fx['result']) ?></td>
+            <td><?= e($fx['status']) ?></td>
+            <td>
+              <form method="post" action="admin.php" onsubmit="return confirm('Delete this fixture?')" style="display:inline">
+                <input type="hidden" name="csrf" value="<?= e(csrf()) ?>">
+                <input type="hidden" name="type" value="fixture_delete">
+                <input type="hidden" name="id" value="<?= (int) $fx['id'] ?>">
                 <button class="text-link" type="submit" style="border:0;background:none;cursor:pointer">Delete</button>
               </form>
             </td>
