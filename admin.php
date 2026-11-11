@@ -2,11 +2,11 @@
 require 'includes/db.php';
 require_login();
 
-if ($_SESSION['user']['role'] !== 'admin') {
+$userRole = strtolower($_SESSION['user']['role'] ?? '');
+if ($userRole !== 'admin' && $userRole !== 'administrator') {
     http_response_code(403);
     exit('Admin access only.');
 }
-
 $pageTitle = 'Admin Dashboard';
 $message = '';
 $error = '';
