@@ -43,6 +43,10 @@ $memberCount = $stmt->fetchColumn();
 
 require 'includes/header.php';
 ?>
+<script>
+  document.body.classList.add('club-detail-page');
+  document.body.classList.add('sport-<?= strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $club['name'])); ?>');
+</script>
 
 <section class="page-hero">
   <span class="eyebrow">
