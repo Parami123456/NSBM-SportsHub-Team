@@ -25,6 +25,9 @@ $clubs = $stmt->fetchAll();
 
 require 'includes/header.php';
 ?>
+<script>
+  document.body.classList.add('clubs-page');
+</script>
 
 <section class="page-hero">
   <span class="eyebrow">FIND YOUR PEOPLE</span>
