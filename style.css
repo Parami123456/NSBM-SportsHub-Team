@@ -418,7 +418,6 @@ main {
   transform: rotate(45deg);
 }
 
-/* Statistics row */
 .stats {
   max-width: none;
   background: linear-gradient(110deg, #08704f, #146c84);
@@ -450,7 +449,6 @@ main {
   letter-spacing: 1.4px;
 }
 
-/* Shared page sections */
 .section,
 .page-wrap {
   max-width: 1140px;
@@ -458,10 +456,13 @@ main {
   padding: 54px 28px;
 }
 
+
 .stats + .section {
   background: linear-gradient(125deg, #c6e5d4, #c8e1eb);
+  margin-top: 20px; 
+  position: relative;
+  z-index: 2;
 }
-
 .section-head {
   display: flex;
   align-items: end;
@@ -492,12 +493,14 @@ main {
   color: #101b18;
 }
 
-/* Club cards */
+
 .cards,
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 18px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .club-card {
