@@ -58,7 +58,7 @@ require 'includes/header.php';
     <a class="button dark" href="equipment.php">Browse sports equipment ↗</a>
   </div>
 
-  <div class="grid">
+  <div class="grid facilities-grid">
     <?php foreach ($facilities as $facility): ?>
       <article class="panel">
         <span style="font-size: 38px">🏟️</span>
