@@ -49,30 +49,6 @@ $events = $pdo->query(
       <span class="court-mark" aria-hidden="true">0</span>
       <span class="play-sticker">#PLAYYOURWAY</span>
 
-      <svg
-        class="hero-basketball"
-        viewBox="0 0 160 160"
-        role="img"
-        aria-label="Basketball"
-      >
-        <defs>
-          <radialGradient id="ballShade" cx="34%" cy="28%">
-            <stop offset="0" stop-color="#ffb06c"/>
-            <stop offset=".56" stop-color="#ff7140"/>
-            <stop offset="1" stop-color="#ed4d28"/>
-          </radialGradient>
-        </defs>
-
-        <circle cx="80" cy="80" r="61" fill="url(#ballShade)"/>
-
-        <g fill="none" stroke="#26352d" stroke-width="5">
-          <path d="M19 80h122"/>
-          <path d="M80 19v122"/>
-          <path d="M37 34c39 26 47 66 22 111"/>
-          <path d="M123 34c-39 26-47 66-22 111"/>
-        </g>
-      </svg>
-
       <span class="court-label">
         FIND YOUR<br>
         <b>GAME FACE.</b>
@@ -164,13 +140,30 @@ $events = $pdo->query(
 
   <div class="event-list">
     <?php foreach ($events as $event): ?>
+    <?php 
+        $eventEmoji = '🏆';
+        $titleLower = strtolower($event['title']);
+        
+        if (strpos($titleLower, 'cricket') !== false) {
+            $eventEmoji = '🏏';
+        } elseif (strpos($titleLower, 'basketball') !== false) {
+            $eventEmoji = '🏀';
+        } elseif (strpos($titleLower, 'football') !== false) {
+            $eventEmoji = '⚽';
+        } elseif (strpos($titleLower, 'badminton') !== false) {
+            $eventEmoji = '🏸';
+        } elseif (strpos($titleLower, 'swimming') !== false) {
+            $eventEmoji = '🏊';
+        }
+      ?>
+    
       <a class="event" href="fixtures.php">
         <div class="date">
           <?= date('d', strtotime($event['event_date'])) ?>
           <small><?= strtoupper(date('M', strtotime($event['event_date']))) ?></small>
         </div>
 
-        <span class="event-icon">🏏</span>
+        <span class="event-icon"><?= $eventEmoji ?></span>
 
         <div>
           <b><?= e($event['title']) ?></b>
