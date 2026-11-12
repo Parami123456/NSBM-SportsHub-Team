@@ -81,6 +81,10 @@ $events = $stmt->fetchAll();
 require 'includes/header.php';
 ?>
 
+<script>
+  document.body.classList.add('fixtures-page');
+</script>
+
 <section class="page-hero">
   <span class="eyebrow">SEASON 2026</span>
   <h1>Fixtures &amp; results.</h1>
@@ -110,7 +114,7 @@ require 'includes/header.php';
 
   <div class="grid">
     <?php foreach ($events as $event): ?>
-      <article class="panel">
+      <article class="panel sport-<?= strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $event['club_name'] ?? 'general')); ?>">
         <div class="row">
           <span class="tag"><?= e($event['event_type']) ?></span>
           <span class="muted">
