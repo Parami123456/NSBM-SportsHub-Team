@@ -1263,7 +1263,7 @@ th {
   box-shadow: 0 15px 45px rgba(0, 0, 0, 0.6) !important;
 }
 body {
-  background: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.65)), url('img7.png') no-repeat center center fixed !important;
+  background: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.65)), url('img7.png') no-repeat center center scroll !important;
   background-size: cover !important;
 }
 
