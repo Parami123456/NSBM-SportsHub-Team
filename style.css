@@ -503,6 +503,12 @@ main {
   box-sizing: border-box;
 }
 
+
+body {
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
 .club-card {
   min-height: 190px;
   border: 1px solid rgba(21, 77, 60, .10);
